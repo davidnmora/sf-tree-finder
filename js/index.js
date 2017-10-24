@@ -1,5 +1,9 @@
 // CITATION: drawTrees(data) based off cats-and-dogs-scatter in class
 console.clear();
+
+// Globals
+let completeDataset = [];
+
 // Set up size
 const mapWidth = 750;
 const mapHeight = 750;
@@ -29,25 +33,17 @@ svg.append('image')
 
 // load data
 d3.csv('data/trees.csv', function(data) {
- let dataset = [];
  data.forEach(d => { 
   if (unususable(d)) return;
-  else dataset.push(clean(d)); 
+  else completeDataset.push(clean(d)); 
 });
- console.log(dataset);
- createVis(dataset);
+ console.log(completeDataset);
+ createVis(completeDataset);
 });
-
-//let projectedLocation = projection([treeLon, treeLat]);
-//let circle = svg.append('circle')
-//   .attr('cx', projectedLocation[0])
-//   .attr('cy', projectedLocaiton[1])
-//   .attr('r', 10);
 
 function createVis(data) {
   drawTrees(data);
 }
-
 
 function drawTrees(data) {
   let circles = svg.selectAll('circle');
@@ -60,17 +56,38 @@ function drawTrees(data) {
     .attr('cx', d => projection([d.Longitude, d.Latitude])[0])
     .attr('cy', d => projection([d.Longitude, d.Latitude])[1])
     .style('fill', 'steelblue')
-    .on("click", (d) => c(d.qSpecies));
+    .on("click", (d) => c(d));
 
   updatedCircles.exit().remove();
 
 }
 
+// _________Event Handlers_________ 
+
+function filterUpperBound(e, dimension) {
+  let num = e.value; 
+  if (isNaN(num)) return;
+  if (num == '') return drawTrees(completeDataset);
+  let filteredData = completeDataset.filter(d => (d[dimension] <= num));
+  drawTrees(filteredData);
+  var obj = { dbh: num }
+  console.log("upperbound: ", obj);
+}
+
+function filterLowerBound(e, dimension) {
+  let num = e.value;
+  if (isNaN(num)) return;
+  if (num == '') return drawTrees(completeDataset);
+  let filteredData = completeDataset.filter(d => (d[dimension] >= num));
+  drawTrees(filteredData);
+  c("lowerbound: " + e.value);
+}
+
 // _________Helper Functions_________
 
-// Filter out any datasets missing crucial info
+// Filter out any datum missing crucial info
 function unususable(d) {
-  if (d.qSpecies.split('::')[1] == '') {
+  if (d.qSpecies.split('::')[1] == '' || d.DBH == '0') {
     return true;
   }
   return !(d.Latitude && d.Longitude && d.qSpecies 
