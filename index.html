@@ -10,8 +10,15 @@
 	<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js'></script>
 	<script src="js/index.js"></script>
 
+	<div id="canvas"></div>
 
-	<input type="text" id="DBH-upper-bound" onkeyup='filterUpperBound(this, "DBH")' placeholder="Max Diameter">
-	<input type="text" id="DBH-lower-bound" onkeyup='filterLowerBound(this, "DBH")' placeholder="Min Diameter">
+	<input type="text" id="DBHmax" onkeyup='filter(this, "DBHmax")' placeholder="Max Diameter">
+	<input type="text" id="DBHmin" onkeyup='filter(this, "DBHmin")' placeholder="Min Diameter">
+	<br>
+	<label class="switch">
+		<input type="checkbox">
+		<span id="POI-slider" class="slider" onclick='filter(this, "POIs")'></span>
+	</label>
+
 </body>
 </html>
