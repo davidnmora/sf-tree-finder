@@ -18,12 +18,21 @@ function d3_rebind(target, source, method) {
   };
 }
 
-// setup slider
-d3.select('#slider9').call(d3.slider().value( [10, 30] ).orientation("vertical")
-  .on("slideend", minMax => { 
-    filterParams.DBHmin = minMax[0];
-    filterParams.DBHmax = minMax[1]; 
-  }));
+function createDBHslider(range) {
+  d3.select('#DBH-range-slider').call(d3.slider().value(range).orientation("horizontal")
+    .on("slideend", minMax => { 
+      filterParams.DBHmin = minMax[0];
+      filterParams.DBHmax = minMax[1]; 
+      drawTrees();
+    })
+    .on("slide", minMax => {
+      d3.select('#DBH-range-slider-min').text(round(minMax[0], 2));
+      d3.select('#DBH-range-slider-max').text(round(minMax[1], 2));
+    }));
+  // add initial values
+  d3.select('#DBH-range-slider-min').text(round(range[0], 2));
+  d3.select('#DBH-range-slider-max').text(round(range[1], 2));
+}
 
 // Set up projection that the map is using
 const mapWidth = 750;
@@ -76,12 +85,14 @@ let pointA = d3.select('#A');
 let pointB = d3.select('#B');
 
 // load data
+let DBHrange = [];
 d3.csv('data/trees-mini.csv' /* DEBUG */, function(data) {
  data.forEach(d => { 
   if (unususable(d)) return;
   else completeDataset.push(clean(d)); 
 });
- console.log(completeDataset);
+ createDBHslider([d3.min(DBHrange), d3.max(DBHrange)]);
+ console.log(completeDataset, [d3.min(DBHrange), d3.max(DBHrange)]);
  createVis();
 });
 
@@ -98,7 +109,7 @@ function drawTrees() {
   .attr('r', 4)
   .attr('cx', d => projToPix(d)[0])
   .attr('cy', d => projToPix(d)[1])
-  .style('fill', 'steelblue')
+  .style('fill', 'black')
   .classed("tree", true)
   .on("click", (d) => c(d));
   updatedCircles.exit().remove();
@@ -107,15 +118,12 @@ function drawTrees() {
 function applyFilters() {
   let filteredData = deepCopy(completeDataset); // QUESTION: is this a terrible idea?
   if (filterParams.DBHmin !== null) {
-    c("Filtering DBHmin");
     filteredData = filteredData.filter(d => (d.DBH >= filterParams.DBHmin));
   }
   if (filterParams.DBHmax !== null) {
-    c("Filtering DBH MAX");
     filteredData = filteredData.filter(d => (d.DBH <= filterParams.DBHmax));
   }
   if (filterParams.filterByPOIs) {
-    c("Filtering by POIs");
     filteredData = filteredData.filter(d => inRangeOfPOIs(d));   
   }
   return filteredData;
@@ -149,11 +157,7 @@ function filter(e, filterType) {
     let slider = d3.select("#POI-slider");
     slider.classed('slider-active', !slider.classed('slider-active'));
     filterParams.filterByPOIs = slider.classed('slider-active');
-  } else {
-    let num = e.value; 
-    if (isNaN(num)) return;
-    filterParams[filterType] = ((num == '') ? null : num);
-  } 
+  }
   drawTrees();
 }
 
@@ -183,12 +187,14 @@ function unususable(d) {
     && d.qAddress && d.DBH && d.PlotSize);
 }
 
+
 function clean(d) {
   d.TreeID    = +d.TreeID;
   d.DBH       = +d.DBH;
   d.Latitude  = +d.Latitude;
   d.Longitude = +d.Longitude; 
-  // TO DO: d.PlotSize relevent to normalize? 
+  
+  DBHrange.push(+d.DBH);
   return d;
 }
 
@@ -219,6 +225,21 @@ function dragended(d) {
 
 function projToPix(d) {
   return projection([d.Longitude, d.Latitude]);
+}
+
+// CITATION: MDN
+function round(value, exp) {
+  if (typeof exp === 'undefined' || +exp === 0) return Math.round(value);
+  value = +value;
+  exp = +exp;
+  if (isNaN(value) || !(typeof exp === 'number' && exp % 1 === 0))
+    return NaN;
+  // Shift
+  value = value.toString().split('e');
+  value = Math.round(+(value[0] + 'e' + (value[1] ? (+value[1] + exp) : exp)));
+  // Shift back
+  value = value.toString().split('e');
+  return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
 }
 
 function c(str) {
