@@ -1,38 +1,4 @@
-// CITATION: drawTrees(data) based off cats-and-dogs-scatter in class
 console.clear();
-
-// Copies a variable number of methods from source to target.
-d3.rebind = function(target, source) {
-  var i = 1, n = arguments.length, method;
-  while (++i < n) target[method = arguments[i]] = d3_rebind(target, source, source[method]);
-  return target;
-};
-
-// Method is assumed to be a standard D3 getter-setter:
-// If passed with no arguments, gets the value.
-// If passed with arguments, sets the value and returns the target.
-function d3_rebind(target, source, method) {
-  return function() {
-    var value = method.apply(source, arguments);
-    return value === source ? target : value;
-  };
-}
-
-function createDBHslider(range) {
-  d3.select('#DBH-range-slider').call(d3.slider().value(range).orientation("horizontal")
-    .on("slideend", minMax => { 
-      filterParams.DBHmin = minMax[0];
-      filterParams.DBHmax = minMax[1]; 
-      drawTrees();
-    })
-    .on("slide", minMax => {
-      d3.select('#DBH-range-slider-min').text(round(minMax[0], 2));
-      d3.select('#DBH-range-slider-max').text(round(minMax[1], 2));
-    }));
-  // add initial values
-  d3.select('#DBH-range-slider-min').text(round(range[0], 2));
-  d3.select('#DBH-range-slider-max').text(round(range[1], 2));
-}
 
 // Set up projection that the map is using
 const mapWidth = 750;
@@ -42,22 +8,25 @@ const projection = d3.geoMercator()
   .scale(225000)
   .translate([mapWidth / 2, mapHeight / 2]);
 
-// This is the mapping between <longitude, latitude> position to <x, y> pixel position on the map projection is a function and it has an inverse:
-// projection([lon, lat]) returns [x, y]
-// projection.invert([x, y]) returns [lon, lat]
-
 // Globals
+let colors = {
+  blue: "#364E97",
+  green: "#5C953E",
+  red: "#AB3D2B"
+}
+
+let maxDistFromAnyPoint = 10; // miles
 let completeDataset = [];
 let POIs = [{
-  Latitude: 37.7722386113234,
-  Longitude: -122.419630895813,
+  Latitude:37.8066799978444,
+  Longitude:-122.425855144407,
   ID: "A",
-  color: "red"
+  color: colors.red
 }, {
-  Latitude: 37.7723771523117,
-  Longitude: -122.423530217156,
+  Latitude: 37.8044183160192,
+  Longitude: -122.446035175776,
   ID: "B",
-  color: "blue"
+  color: colors.blue
 }];
 let filterParams = {
   DBHmin: null,
@@ -70,7 +39,7 @@ let filterParams = {
 };
 
 // Add an SVG element to the DOM
-let svg = d3.select('body').append('svg')
+let svg = d3.select('#canvas').append('svg')
 .attr('width', mapWidth)
 .attr('height', mapHeight);
 
@@ -81,25 +50,23 @@ svg.append('image')
 .attr('xlink:href', 'https://magrawala.github.io/cs448b-fa17/assets/a3/sf-map.svg');
 
 drawPOIs();
-let pointA = d3.select('#A');
-let pointB = d3.select('#B');
 
 // load data
 let DBHrange = [];
-d3.csv('data/trees-mini.csv' /* DEBUG */, function(data) {
+d3.csv('data/trees.csv', function(data) {
  data.forEach(d => { 
   if (unususable(d)) return;
   else completeDataset.push(clean(d)); 
 });
- createDBHslider([d3.min(DBHrange), d3.max(DBHrange)]);
- console.log(completeDataset, [d3.min(DBHrange), d3.max(DBHrange)]);
  createVis();
+ createSliders([d3.min(DBHrange), d3.max(DBHrange)]);
 });
 
 function createVis() {
   drawTrees();
 }
 
+// CITATION: drawTrees(data) based off cats-and-dogs-scatter in class
 function drawTrees() {
   let data = applyFilters();
   let circles = svg.selectAll('.tree');
@@ -109,9 +76,9 @@ function drawTrees() {
   .attr('r', 4)
   .attr('cx', d => projToPix(d)[0])
   .attr('cy', d => projToPix(d)[1])
-  .style('fill', 'black')
+  .style('fill', colors.green)
   .classed("tree", true)
-  .on("click", (d) => c(d));
+  .on("click", (d) => console.log(d));
   updatedCircles.exit().remove();
 }
 
@@ -128,13 +95,6 @@ function applyFilters() {
   }
   return filteredData;
 }
-
-function inRangeOfPOIs(d) {
-  let AisGood = dist(filterParams.pointAxy, projToPix(d)) <= filterParams.maxDistFromA;
-  let BisGood = dist(filterParams.pointBxy, projToPix(d)) <= filterParams.maxDistFromB;
-  return AisGood && BisGood;
-}
-
 
 function drawPOIs() {
   svg.selectAll('.POI').data(POIs, d => d.ID).enter()
@@ -154,9 +114,10 @@ function drawPOIs() {
 
 function filter(e, filterType) {
   if (filterType == "POIs") {
-    let slider = d3.select("#POI-slider");
-    slider.classed('slider-active', !slider.classed('slider-active'));
-    filterParams.filterByPOIs = slider.classed('slider-active');
+    let toggle = d3.select("#POI-toggle");
+    toggle.classed('toggle-active', !toggle.classed('toggle-active'));
+    filterParams.filterByPOIs = toggle.classed('toggle-active');
+    d3.select("#POI-sliders").classed('active', toggle.classed('toggle-active'));
   }
   drawTrees();
 }
@@ -187,7 +148,6 @@ function unususable(d) {
     && d.qAddress && d.DBH && d.PlotSize);
 }
 
-
 function clean(d) {
   d.TreeID    = +d.TreeID;
   d.DBH       = +d.DBH;
@@ -196,6 +156,51 @@ function clean(d) {
   
   DBHrange.push(+d.DBH);
   return d;
+}
+
+function createSliders(range) {
+  // DBH range slider
+  d3.select('#DBH-range-slider').call(d3.slider().value(range).orientation("horizontal")
+    .min(range[0])
+    .max(range[1])
+    .on("slideend", minMax => { 
+      filterParams.DBHmin = minMax[0];
+      filterParams.DBHmax = minMax[1]; 
+      drawTrees();
+    })
+    .on("slide", minMax => {
+      d3.select('#DBH-range-slider-min').text(round(minMax[0], 2));
+      d3.select('#DBH-range-slider-max').text(round(minMax[1], 2));
+    }));
+  // add initial values
+  d3.select('#DBH-range-slider-min').text(round(range[0], 2));
+  d3.select('#DBH-range-slider-max').text(round(range[1], 2));
+
+  // POI A slider
+  d3.select('#POI-slider-A').call(d3.slider().max(maxDistFromAnyPoint)
+    .on("slideend", value => { 
+      filterParams.maxDistFromA = value;
+      drawTrees();
+    })
+    .on("slide", value => {
+      d3.select('#POI-slider-A-max').text(round(value, 2));
+    }));
+
+  // POI B slider
+  d3.select('#POI-slider-B').call(d3.slider().max(maxDistFromAnyPoint)
+    .on("slideend", value => { 
+      filterParams.maxDistFromA = value;
+      drawTrees();
+    })
+    .on("slide", value => {
+      d3.select('#POI-slider-B-max').text(round(value, 2));
+    }));
+}
+
+function inRangeOfPOIs(d) {
+  let AisGood = dist(filterParams.pointAxy, projToPix(d)) <= filterParams.maxDistFromA;
+  let BisGood = dist(filterParams.pointBxy, projToPix(d)) <= filterParams.maxDistFromB;
+  return AisGood && BisGood;
 }
 
 // CITATION: Xah Lee
@@ -216,7 +221,6 @@ function dragged(d) {
 function dragended(d) {
   d3.select(this).classed("clicked", false);
   if (filterParams.filterByPOIs) {
-    c("Drag done. Time to filter by POIs");
     if (d.ID == "A") filterParams.pointAxy = [d.x, d.y];
     else filterParams.pointBxy = [d.x, d.y];
     drawTrees();
@@ -240,8 +244,4 @@ function round(value, exp) {
   // Shift back
   value = value.toString().split('e');
   return +(value[0] + 'e' + (value[1] ? (+value[1] - exp) : -exp));
-}
-
-function c(str) {
-  console.log(str);
 }

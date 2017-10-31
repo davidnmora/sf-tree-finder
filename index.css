@@ -1,24 +1,86 @@
-/* DHB-range-slider specific */
-.wrapper {
-  width: 800px;
-  margin-left: 20px;
+body {
+  word-wrap: break-word;
+  font-family: "NHaasGroteskDSW02-95Blk", Arial, sans-serif;
+  font-weight: normal;
+  font-style: normal;
+  padding: 0;
+  margin: 0 0 0 0;
+  display: block;
 }
-.wrapper > div {
+
+h1 {
+    font-size: 5.25em; 
+    line-height: 0.1em;
+}
+
+h3 {
+  line-height: 0.1em;
+}
+
+p {
+  width: 300px;
+}
+/* Circles */
+circle.clicked {
+  stroke: #000;
+  stroke-width: 2px;
+  opacity: 1;
+}
+
+circle {
+  opacity: 0.8;
+}
+
+/* sliders and controls layout */
+#controls-wrapper {
+  margin-top: 60px;
+  margin-left: 40px;
+  float: left;
+  max-width: 300;
+}
+
+#canvas {
+  float: left;
+}
+
+#controls-wrapper > div {
   margin: 10px 0;
 }
 
-/* normal */
-body {
-	/*background: black;*/
+.point-A {
+  color: #AB3D2B;
 }
 
-circle.clicked {
-	stroke: #000;
-	stroke-width: 2px;
+.point-B {
+  color: #364E97;
 }
 
+#POI-slider-A > .d3-slider-handle {
+  background: #AB3D2B;
+}
 
-/* Slider. CITATION: w3schools.com tutorial; */
+#POI-slider-B > .d3-slider-handle {
+  background: #364E97;
+}
+
+#POI-slider-A, #POI-slider-B {
+  z-index: 100000;
+}
+
+/* sliders */
+.d3-slider-horizontal {
+  width: 150px;
+}
+
+#POI-sliders.active {
+  opacity: 1;
+}
+
+#POI-sliders {
+  opacity: 0.3;
+}
+
+/* Toggle. CITATION: w3schools.com tutorial; */
 .switch {
   position: relative;
   display: inline-block;
@@ -29,8 +91,8 @@ circle.clicked {
 /* Hide default HTML checkbox */
 .switch input {display:none;}
 
-/* The slider */
-.slider {
+/* The toggle */
+.toggle {
   position: absolute;
   cursor: pointer;
   top: 0;
@@ -43,7 +105,7 @@ circle.clicked {
   border-radius: 34px;
 }
 
-.slider:before {
+.toggle:before {
   position: absolute;
   content: "";
   height: 26px;
@@ -56,15 +118,15 @@ circle.clicked {
   border-radius: 50%;
 }
 
-input:checked + .slider {
-  background-color: #2196F3;
+input:checked + .toggle {
+  background-color: #364E97; /* dark blue */
 }
 
-input:focus + .slider {
-  box-shadow: 0 0 1px #2196F3;
+input:focus + .toggle {
+  box-shadow: 0 0 1px #364E97; /* dark blue */
 }
 
-input:checked + .slider:before {
+input:checked + .toggle:before {
   -webkit-transform: translateX(26px);
   -ms-transform: translateX(26px);
   transform: translateX(26px);

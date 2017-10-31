@@ -4,24 +4,41 @@
 	<meta charset="UTF-8">
 	<title>SF-tree-finder</title>
 	<link rel="stylesheet" href='index.css'></link>
-	<link rel="stylesheet" href="https://rawgit.com/MasterMaps/d3-slider/master/d3.slider.css"></link>
+	<link rel="stylesheet" href='d3.slider.css'></link>
 </head>
 
 <body>
 
 	<div id="canvas"></div>
-	<div class="wrapper">
-		<h3>Tree Diameter Range (inches): 
-			<br>max: <span id="DBH-range-slider-max"></span>
-			<br>min: <span id="DBH-range-slider-min"></span>
-		</h3>
-		<div id="DBH-range-slider"></div>
-	</div>
 
-	<label class="switch">
-		<input type="checkbox">
-		<span id="POI-slider" class="slider" onclick='filter(this, "POIs")'></span>
-	</label>
+	<div id="controls-wrapper">
+		<h1>Tree Finder</h1>
+		<div>
+			<p>Drag and release sliders to filter data. Click toggle to activate or deactivate filtering by distances from Points A or B. Drag <span class="point-A">point A</span> and <span class="point-B">point B</span> around the map.
+				<br>
+				<br>Created by David Mora for cs448b in Fall 2017
+			</p>
+		</div>
+		<h3>Tree Diameter Range: </h3>
+		<h5>
+			<br>max: <span id="DBH-range-slider-max"></span> inches
+			<br>min: <span id="DBH-range-slider-min"></span> inches
+		</h5>
+		<div id="DBH-range-slider"></div>
+
+
+		<label class="switch">
+			<input type="checkbox">
+			<span id="POI-toggle" class="toggle" onclick='filter(this, "POIs")'></span>
+		</label>
+		<div id="POI-sliders">
+			<h3>Max distance from <span class="point-A">point A</span>: <span id="POI-slider-A-max">0</span> miles</h3>
+			<div id="POI-slider-A"></div>
+
+			<h3>Max distance from <span class="point-B">point B</span>: <span id="POI-slider-B-max">0</span> miles</h3>
+			<div id="POI-slider-B"></div>
+		</div>	
+	</div>
 
 	<script src='https://cdnjs.cloudflare.com/ajax/libs/d3/4.9.1/d3.min.js'></script>
 	<script src="js/d3.slider.js"></script>
