@@ -1,6 +1,30 @@
 // CITATION: drawTrees(data) based off cats-and-dogs-scatter in class
 console.clear();
 
+// Copies a variable number of methods from source to target.
+d3.rebind = function(target, source) {
+  var i = 1, n = arguments.length, method;
+  while (++i < n) target[method = arguments[i]] = d3_rebind(target, source, source[method]);
+  return target;
+};
+
+// Method is assumed to be a standard D3 getter-setter:
+// If passed with no arguments, gets the value.
+// If passed with arguments, sets the value and returns the target.
+function d3_rebind(target, source, method) {
+  return function() {
+    var value = method.apply(source, arguments);
+    return value === source ? target : value;
+  };
+}
+
+// setup slider
+d3.select('#slider9').call(d3.slider().value( [10, 30] ).orientation("vertical")
+  .on("slideend", minMax => { 
+    filterParams.DBHmin = minMax[0];
+    filterParams.DBHmax = minMax[1]; 
+  }));
+
 // Set up projection that the map is using
 const mapWidth = 750;
 const mapHeight = 750;
@@ -29,8 +53,8 @@ let POIs = [{
 let filterParams = {
   DBHmin: null,
   DBHmax: null,
-  maxDistFromA: 0.1, // miles DEBUG
-  maxDistFromB: 0.1, // miles DEBUG
+  maxDistFromA: 2.1, // miles DEBUG
+  maxDistFromB: 2.1, // miles DEBUG
   pointAxy: projection([POIs[0].Longitude, POIs[0].Latitude]),
   pointBxy: projection([POIs[1].Longitude, POIs[1].Latitude]),
   filterByPOIs: false
@@ -69,21 +93,18 @@ function drawTrees() {
   let data = applyFilters();
   let circles = svg.selectAll('.tree');
   let updatedCircles = circles.data(data, d => d.TreeID);
-  // make circle 'pointers' for new datapoints
-  let enterSelection = updatedCircles.enter();
-  // now append actual new circle SVGs
-  let newCircles = enterSelection.append('circle')
+  // make circle 'pointers' for new datapoints, append actual new circle SVGs
+  let newCircles = updatedCircles.enter().append('circle')
   .attr('r', 4)
   .attr('cx', d => projToPix(d)[0])
   .attr('cy', d => projToPix(d)[1])
   .style('fill', 'steelblue')
+  .classed("tree", true)
   .on("click", (d) => c(d));
-
   updatedCircles.exit().remove();
 }
 
 function applyFilters() {
-  // console.clear();
   let filteredData = deepCopy(completeDataset); // QUESTION: is this a terrible idea?
   if (filterParams.DBHmin !== null) {
     c("Filtering DBHmin");
@@ -100,15 +121,10 @@ function applyFilters() {
   return filteredData;
 }
 
-// console.log(pointA.datum().x, pointA.datum().y);
 function inRangeOfPOIs(d) {
-  // check A
   let AisGood = dist(filterParams.pointAxy, projToPix(d)) <= filterParams.maxDistFromA;
   let BisGood = dist(filterParams.pointBxy, projToPix(d)) <= filterParams.maxDistFromB;
-
-
-  // let AInRange = dist([])
-  return true;
+  return AisGood && BisGood;
 }
 
 
@@ -197,6 +213,7 @@ function dragended(d) {
     c("Drag done. Time to filter by POIs");
     if (d.ID == "A") filterParams.pointAxy = [d.x, d.y];
     else filterParams.pointBxy = [d.x, d.y];
+    drawTrees();
   }
 }
 

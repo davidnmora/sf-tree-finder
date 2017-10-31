@@ -1,3 +1,17 @@
+/* slider specific */
+.wrapper {
+  width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.wrapper > div {
+  margin: 10px 0;
+}
+#slider9 {
+  height: 250px;
+}
+
+/* normal */
 body {
 	background: black;
 }
