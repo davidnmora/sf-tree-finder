@@ -1,5 +1,3 @@
-console.clear();
-
 // Set up projection that the map is using
 const mapWidth = 750;
 const mapHeight = 750;
@@ -126,9 +124,6 @@ function filter(e, filterType) {
 
 // CITATION: based off piazza post by Alec Glassford
 function dist(xy1, xy2) {
-  // let xy1 = [200, 600]; // location in x,y pixels on map
-  // let xy2 = [300, 600]; // this is 100 pixels away
-
   let lonLat1 = projection.invert(xy1);
   let lonLat2 = projection.invert(xy2);
 
