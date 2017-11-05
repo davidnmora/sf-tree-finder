@@ -18,22 +18,24 @@
 				<br>Created by David Mora for cs448b in Fall 2017
 			</p>
 		</div>
-		<h3>Tree Diameter Range: </h3>
-		<h5>
-			<br>max: <span id="DBH-range-slider-max"></span> inches
-			<br>min: <span id="DBH-range-slider-min"></span> inches
-		</h5>
+		<h2>Tree Diameter Range: </h2>
+		<h3>
+			max: <span id="DBH-range-slider-max"></span> inches
+			<br>
+			min: <span id="DBH-range-slider-min"></span> inches
+		</h3>
 		<div id="DBH-range-slider"></div>
 
+		<h2>Filter trees by distance from points A and B</h2>
 		<label class="switch">
 			<input type="checkbox">
-			<span id="POI-toggle" class="toggle" onclick='filter(this, "POIs")'></span>
+			<span id="POI-toggle" class="toggle" onclick='filterWithPIOs(this)'></span>
 		</label>
 		<div id="POI-sliders">
-			<h3>Max distance from <span class="point-A">point A</span>: <span id="POI-slider-A-max">0</span> miles</h3>
+			<h3>Max distance from <span class="point-A">point A</span>: <span id="POI-slider-A-max">2</span> miles</h3>
 			<div id="POI-slider-A"></div>
 
-			<h3>Max distance from <span class="point-B">point B</span>: <span id="POI-slider-B-max">0</span> miles</h3>
+			<h3>Max distance from <span class="point-B">point B</span>: <span id="POI-slider-B-max">2</span> miles</h3>
 			<div id="POI-slider-B"></div>
 		</div>	
 	</div>

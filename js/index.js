@@ -13,8 +13,11 @@ let colors = {
   red: "#AB3D2B"
 }
 
+let activePOIopacity    = 0.8;
+let inactivePOIopacity  = 0.2;
+let POIstartDist        = 2;
 let maxDistFromAnyPoint = 10; // miles
-let completeDataset = [];
+let completeDataset     = [];
 let POIs = [{
   Latitude:37.8066799978444,
   Longitude:-122.425855144407,
@@ -29,8 +32,8 @@ let POIs = [{
 let filterParams = {
   DBHmin: null,
   DBHmax: null,
-  maxDistFromA: 2.1, // miles DEBUG
-  maxDistFromB: 2.1, // miles DEBUG
+  maxDistFromA: POIstartDist,
+  maxDistFromB: POIstartDist, 
   pointAxy: projection([POIs[0].Longitude, POIs[0].Latitude]),
   pointBxy: projection([POIs[1].Longitude, POIs[1].Latitude]),
   filterByPOIs: false
@@ -45,7 +48,7 @@ let svg = d3.select('#canvas').append('svg')
 svg.append('image')
 .attr('width', mapWidth)
 .attr('height', mapHeight)
-.attr('xlink:href', 'https://magrawala.github.io/cs448b-fa17/assets/a3/sf-map.svg');
+.attr('href', 'https://magrawala.github.io/cs448b-fa17/assets/a3/sf-map.svg');
 
 drawPOIs();
 
@@ -102,6 +105,7 @@ function drawPOIs() {
   .attr('cy', d => projToPix(d)[1])
   .style('fill', d => d.color)
   .attr('id', d => d.ID) // 'A' or 'B'
+  .classed('POI', true)
   .call(d3.drag()
     .on("start", dragstarted)
     .on("drag", dragged)
@@ -110,13 +114,13 @@ function drawPOIs() {
 
 // _________Event Handlers_________ 
 
-function filter(e, filterType) {
-  if (filterType == "POIs") {
-    let toggle = d3.select("#POI-toggle");
-    toggle.classed('toggle-active', !toggle.classed('toggle-active'));
-    filterParams.filterByPOIs = toggle.classed('toggle-active');
-    d3.select("#POI-sliders").classed('active', toggle.classed('toggle-active'));
-  }
+function filterWithPIOs(e) {
+  let toggle = d3.select("#POI-toggle");
+  toggle.classed('toggle-active', !toggle.classed('toggle-active'));
+  let isActive = toggle.classed('toggle-active');
+  filterParams.filterByPOIs = isActive;
+  d3.select("#POI-sliders").classed('active', isActive);
+  d3.selectAll(".POI").attr('fill-opacity', isActive ? activePOIopacity : inactivePOIopacity);
   drawTrees();
 }
 
@@ -153,11 +157,11 @@ function clean(d) {
   return d;
 }
 
-function createSliders(range) {
+function createSliders(DBHrange) {
   // DBH range slider
-  d3.select('#DBH-range-slider').call(d3.slider().value(range).orientation("horizontal")
-    .min(range[0])
-    .max(range[1])
+  d3.select('#DBH-range-slider').call(d3.slider().value(DBHrange).orientation("horizontal")
+    .min(DBHrange[0])
+    .max(DBHrange[1])
     .on("slideend", minMax => { 
       filterParams.DBHmin = minMax[0];
       filterParams.DBHmax = minMax[1]; 
@@ -168,11 +172,11 @@ function createSliders(range) {
       d3.select('#DBH-range-slider-max').text(round(minMax[1], 2));
     }));
   // add initial values
-  d3.select('#DBH-range-slider-min').text(round(range[0], 2));
-  d3.select('#DBH-range-slider-max').text(round(range[1], 2));
+  d3.select('#DBH-range-slider-min').text(round(DBHrange[0], 2));
+  d3.select('#DBH-range-slider-max').text(round(DBHrange[1], 2));
 
   // POI A slider
-  d3.select('#POI-slider-A').call(d3.slider().max(maxDistFromAnyPoint)
+  d3.select('#POI-slider-A').call(d3.slider().value(POIstartDist).max(maxDistFromAnyPoint)
     .on("slideend", value => { 
       filterParams.maxDistFromA = value;
       drawTrees();
@@ -182,7 +186,7 @@ function createSliders(range) {
     }));
 
   // POI B slider
-  d3.select('#POI-slider-B').call(d3.slider().max(maxDistFromAnyPoint)
+  d3.select('#POI-slider-B').call(d3.slider().value(POIstartDist).max(maxDistFromAnyPoint)
     .on("slideend", value => { 
       filterParams.maxDistFromA = value;
       drawTrees();
@@ -190,6 +194,9 @@ function createSliders(range) {
     .on("slide", value => {
       d3.select('#POI-slider-B-max').text(round(value, 2));
     }));
+
+  // Update POI A and B initial value in controls slider
+  d3.select('POI-slider-B-max, POI-slider-A-max').text(POIstartDist);
 }
 
 function inRangeOfPOIs(d) {
@@ -216,6 +223,7 @@ function dragged(d) {
 function dragended(d) {
   d3.select(this).classed("clicked", false);
   if (filterParams.filterByPOIs) {
+    console.log(d.ID);
     if (d.ID == "A") filterParams.pointAxy = [d.x, d.y];
     else filterParams.pointBxy = [d.x, d.y];
     drawTrees();

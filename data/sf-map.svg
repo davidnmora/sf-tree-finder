@@ -1,5 +1,4 @@
-
-<?xml version="1.0" standalone="no"?><!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd"><svg width="750" height="750" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs xmlns="http://www.w3.org/1999/xhtml"><style type="text/css"><![CDATA[
+<svg width="750" height="750" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs xmlns="http://www.w3.org/1999/xhtml"><style type="text/css"><![CDATA[
 path.major_road, path.minor_road, path.highway, path.rail { fill: none; stroke-linejoin: round; stroke-linecap: round; }
 path.major_road { stroke: rgb(204, 204, 204); }
 path.minor_road { stroke: rgb(221, 221, 221); stroke-width: 0.5px; }
